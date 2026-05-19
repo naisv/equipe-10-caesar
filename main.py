@@ -6,6 +6,7 @@ import argparse
 import string
 import unicodedata
 
+
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
     forme_nfd = unicodedata.normalize('NFD', texte)
@@ -76,6 +77,12 @@ def enigma_chiffrer(message: str, cles):
 	# Exemple attendu par le test :
 	# - enigma_chiffrer("MAISON", (7, 16, 9)) -> "TQRZEW"
 	pass
+def enigma_dechiffrer(message: str, cles):
+	dechiffrage=""
+	for position in range(len(message)):
+		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
+		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
+	return dechiffrage
 
 
 def _parse_cle(texte: str):

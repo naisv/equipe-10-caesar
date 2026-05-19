@@ -56,6 +56,11 @@ def test_parse_cle_enigma():
     cle="7-16-9"
     assert _parse_cle(cle) == (7,16,9)
 
+def test_enigma_dechiffrer():
+    mot="TQRZEW"
+    cle=(7, 16, 9)
+    assert enigma_dechiffrer(mot,cle) == "MAISON"
+
 # TODO : ajoutez vos propres tests ci-dessous
 #  - test pour les majuscules
 #  - test pour les caractères spéciaux (accents, ponctuation)
