@@ -4,6 +4,11 @@ Squelette de départ pour votre équipe.
 """
 import argparse
 
+#Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
+def supprimer_accents(texte):
+    forme_nfd = unicodedata.normalize('NFD', texte)
+    texte_propre = "".join(c for c in forme_nfd if unicodedata.category(c) != 'Mn')
+    return texte_propre
 
 def chiffrer(message: str, cle: int):
 	# TODO: retourner la chaîne chiffrée (type str).
