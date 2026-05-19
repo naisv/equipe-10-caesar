@@ -4,6 +4,7 @@ Equipe: Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 """
 import argparse
 import string
+import unicodedata
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -44,8 +45,8 @@ def dechiffrer(message: str, cle: int):
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_cesar_round_trip
 	# Le test vérifie que dechiffrer(chiffrer(msg, 7), 7) == msg.
-	pass
-
+	dechiffrage=chiffrer(message, -cle)
+	return dechiffrage
 
 def enigma_chiffrer(message: str, cles):
 	# TODO: retourner la chaîne chiffrée Enigma César (type str).
