@@ -6,6 +6,7 @@ import argparse
 import string
 import unicodedata
 
+
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
     forme_nfd = unicodedata.normalize('NFD', texte)
