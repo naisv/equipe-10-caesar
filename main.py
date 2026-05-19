@@ -1,6 +1,6 @@
 """
 MGA802 — Mini-Projet A : Chiffrement de César
-Equipe: Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
+Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 """
 import argparse
 import string
