@@ -5,6 +5,12 @@ Equipe: Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 import argparse
 import string
 
+#Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
+def supprimer_accents(texte):
+    forme_nfd = unicodedata.normalize('NFD', texte)
+    texte_propre = "".join(c for c in forme_nfd if unicodedata.category(c) != 'Mn')
+    return texte_propre
+
 def chiffrer(message: str, cle: int):
 	# Exigences visibles dans tests/test_caesar.py :
 	# - test_cesar_officiel_cle_42
