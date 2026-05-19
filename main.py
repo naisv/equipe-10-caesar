@@ -78,7 +78,7 @@ def enigma_chiffrer(message: str, cles):
 	pass
 def enigma_dechiffrer(message: str, cles):
 	dechiffrage=""
-	for position in len(message):
+	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
