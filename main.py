@@ -20,14 +20,15 @@ def chiffrer(message: str, cle: int):
 	# - chiffrer("Veni, vidi, vici!", 42) -> "Ludy, lyty, lysy!"
 	# - chiffrer("Veni, vidi, vici!", -42) -> "Foxs, fsns, fsms!"
 	# - chiffrer("Tout pareil.", 0) -> "Tout pareil."
+	message_propre = supprimer_accents(message) #On retire les accents de la chaîne de caractères fournie
 	alphabet = string.ascii_lowercase
 	chiffrage=""  #Initialisation du résultat chiffré en une chaîne de caractères vide
-	for i in range (0,len(message)):
+	for i in range (0,len(message_propre)):
 		#Vérification qu'il s'agit d'une lettre
-		if message[i].isalpha():
-			est_majuscule=message[i].isupper() #Enregistre si la lettre est une majuscule
+		if message_propre[i].isalpha():
+			est_majuscule=message_propre[i].isupper() #Enregistre si la lettre est une majuscule
 
-			index=alphabet.find(message[i].lower()) #Récupère l'index de la lettre (en minuscule)
+			index=alphabet.find(message_propre[i].lower()) #Récupère l'index de la lettre (en minuscule)
 			nouvel_index=(index + cle)%26 #Calcul du nouvel index avec la clé fournie et en s'assurant que l'on reste dans [0,26]
 
 			if est_majuscule:
@@ -35,7 +36,7 @@ def chiffrer(message: str, cle: int):
 			else:
 				chiffrage+=alphabet[nouvel_index]
 		else:
-			chiffrage+=message[i]
+			chiffrage+=message_propre[i]
 	return chiffrage
 
 def dechiffrer(message: str, cle: int):
