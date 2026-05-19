@@ -1,9 +1,10 @@
 """
 MGA802 — Mini-Projet A : Chiffrement de César
-Equipe: Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
+Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 """
 import argparse
 import string
+import unicodedata
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -11,6 +12,20 @@ def supprimer_accents(texte):
     texte_propre = "".join(c for c in forme_nfd if unicodedata.category(c) != 'Mn')
     return texte_propre
 
+#Cette fonction extrait le texte dans un fichier dont le nom est donné en paramètre et le retourne en str
+def recuperer_texte(texte):
+    try:
+        with open(texte, 'r', encoding='utf-8') as f:
+            extraction = f.read()
+    except FileNotFoundError:
+        print("Fichier introuvable.")
+        exit() # Cette ligne doit être alignée avec le print
+    return extraction
+
+"""Cette fonction chiffre en César avec un message et une clé
+Elle vérifie si le texte donné est un texte ou le nom d'un fichier et récupère alors le texte du fichier
+Elle fait appel à une fonction pour enlever les accents du texte
+Elle chiffre selon la clé donnée en paramètrre"""
 def chiffrer(message: str, cle: int):
 	# Exigences visibles dans tests/test_caesar.py :
 	# - test_cesar_officiel_cle_42
@@ -20,6 +35,8 @@ def chiffrer(message: str, cle: int):
 	# - chiffrer("Veni, vidi, vici!", 42) -> "Ludy, lyty, lysy!"
 	# - chiffrer("Veni, vidi, vici!", -42) -> "Foxs, fsns, fsms!"
 	# - chiffrer("Tout pareil.", 0) -> "Tout pareil."
+	if message.endswith(".txt"):
+		message=recuperer_texte(message)
 	message_propre = supprimer_accents(message) #On retire les accents de la chaîne de caractères fournie
 	alphabet = string.ascii_lowercase
 	chiffrage=""  #Initialisation du résultat chiffré en une chaîne de caractères vide
@@ -44,12 +61,12 @@ def dechiffrer(message: str, cle: int):
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_cesar_round_trip
 	# Le test vérifie que dechiffrer(chiffrer(msg, 7), 7) == msg.
-	pass
-
+	dechiffrage=chiffrer(message, -cle)
+	return dechiffrage
 
 def enigma_chiffrer(message: str, cles):
 	chiffrage=""
-	for position in len(message):
+	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return chiffrage
@@ -95,6 +112,8 @@ def _parse_cle(texte: str):
 		return tuple(int(x) for x in texte.split("-"))
 	# Sinon, c'est une clé César simple : on convertit en entier.
 	return int(texte)
+
+
 
 def main(argv=None):
 	"""Point d'entrée principal du programme en ligne de commande.
