@@ -91,7 +91,7 @@ def dechiffrer_force_brute(message):
 			break
 	return message_clair
 
-def reconnaitre(message):
+#def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
 	#Au lieu de retourner ceux ayant le meilleur degré, mieux vaut enregistrer le taux de conf de chaque test et prendre le meilleur ?
@@ -102,7 +102,7 @@ def _parse_cle(texte: str):
 	Cette fonction analyse la clé fournie par l'utilisateur en ligne de commande
 	et la transforme en type Python approprié :
 	- César           : un entier, ex. "42" ou "-42"
-	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9"
+	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9" ou "-7--16-9"
 
 	Paramètre :
 		texte (str) : la chaîne saisie par l'utilisateur après --cle.
@@ -110,20 +110,49 @@ def _parse_cle(texte: str):
 	Retour :
 		int : une clé entière pour César
 		tuple : un tuple de 3 entiers pour Enigma César
-
-	Exemple :
-		_parse_cle("42") → 42 (int)
-		_parse_cle("7-16-9") → (7, 16, 9) (tuple)
 	"""
-	# Vérifier s'il y a un tiret dans la clé (sauf si c'est juste un signe négatif).
-	# lstrip("-") enlève tous les tirets au début, pour distinguer :
-	#   "-42" (entier négatif, pas de tiret après le signe)
-	#   "7-16-9" (trois nombres séparés par des tirets)
-	if "-" in texte.lstrip("-"):
-		# Si oui, c'est une clé Enigma César : on coupe au niveau du "-" et on convertit en entiers.
-		return tuple(int(x) for x in texte.split("-"))
-	# Sinon, c'est une clé César simple : on convertit en entier.
-	return int(texte)
+	# Nettoyage des espaces superflus autour de la chaîne
+	texte = texte.strip()
+
+	# Compter le nombre de tirets qui servent de séparateurs.
+	# Un tiret est un séparateur s'il n'est pas au tout début de la chaîne
+	# et s'il n'est pas précédé immédiatement par un autre tiret (cas d'un nombre négatif).
+	nb_separateurs = 0
+	for i in range(1, len(texte)):
+		if texte[i] == '-' and texte[i - 1] != '-':
+			nb_separateurs += 1
+
+	# Si on détecte des tirets séparateurs, on traite comme une clé Enigma
+	if nb_separateurs > 0:
+		try:
+			# Pour découper proprement malgré les nombres négatifs, on remplace d'abord
+			# les tirets de séparation par des espaces, puis on sépare.
+			# Un tiret est un séparateur s'il est précédé d'un chiffre.
+			liste_caracteres = []
+			for i in range(len(texte)):
+				if i > 0 and texte[i] == '-' and texte[i - 1].isdigit():
+					liste_caracteres.append(' ')
+				else:
+					liste_caracteres.append(texte[i])
+
+			chaine_nettoyee = "".join(liste_caracteres)
+			cles_elements = chaine_nettoyee.split()
+
+			# Validation stricte : la clé Enigma doit contenir exactement 3 nombres
+			if len(cles_elements) != 3:
+				raise ValueError(f"Une cle Enigma doit contenir exactement 3 nombres. Recu : {len(cles_elements)}")
+
+			return tuple(int(x) for x in cles_elements)
+
+		except ValueError as e:
+			# On propage l'erreur avec un message explicite
+			raise ValueError(f"Format de cle Enigma invalide ('a-b-c'). Erreur : {e}")
+
+	# Sinon, c'est une clé César simple (entière, positive ou négative)
+	try:
+		return int(texte)
+	except ValueError:
+		raise ValueError(f"La cle pour Cesar doit etre un entier valide (ex: 42 ou -42). Recu : '{texte}'")
 
 
 

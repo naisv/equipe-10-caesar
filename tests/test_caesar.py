@@ -10,6 +10,7 @@ Pour lancer les tests :
 import pytest
 import sys
 from pathlib import Path
+import pytest
 
 # Permet d'importer main.py depuis le dossier parent
 sys.path.insert(0, str(Path(__file__).parent.parent))
