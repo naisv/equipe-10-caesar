@@ -9,6 +9,7 @@ Pour lancer les tests :
 """
 import sys
 from pathlib import Path
+import pytest
 
 # Permet d'importer main.py depuis le dossier parent
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -60,6 +61,23 @@ def test_enigma_dechiffrer():
     mot="TQRZEW"
     cle=(7, 16, 9)
     assert enigma_dechiffrer(mot,cle) == "MAISON"
+
+def test_parse_cle_enigma_valide():
+    # Vérifie que la chaîne est bien convertie en tuple de 3 entiers
+    assert _parse_cle("7-16-9") == (7, 16, 9)
+    assert _parse_cle("-1-2-3") == (-1, 2, 3)
+
+def test_enigma_rejet_cle_invalide():
+    # Vérifie qu'une exception ValueError est levée si la clé n'a pas exactement 3 nombres
+    # (Note : Si votre fonction _parse_cle ou enigma_chiffrer ne lève pas encore d'erreur,
+    # ce test vous aidera à implémenter la validation avec un bloc try/except ou un assert)
+    with pytest.raises(ValueError):
+        cles_invalides = _parse_cle("7-16")
+        enigma_chiffrer("TEST", cles_invalides)
+
+    with pytest.raises(ValueError):
+        cles_invalides = _parse_cle("1-2-3-4")
+        enigma_chiffrer("TEST", cles_invalides)
 
 # TODO : ajoutez vos propres tests ci-dessous
 #  - test pour les majuscules
