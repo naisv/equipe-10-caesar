@@ -182,13 +182,21 @@ def main(argv=None):
 
 	# === ÉTAPE 2 : Définir les arguments attendus ===
 
+	# Argument positionnel "methode" : l'opération à effectuer.
+	# - Obligatoire (pas de -- devant)
+	# - Doit être l'une des valeurs listées dans "choices"
+	parser.add_argument(
+		"methode",
+		choices=["caesar", "enigma"],
+		help="Type de chiffrage (ceasar ou enigma).")
+
 	# Argument positionnel "action" : l'opération à effectuer.
 	# - Obligatoire (pas de -- devant)
 	# - Doit être l'une des valeurs listées dans "choices"
 	parser.add_argument(
 		"action",
-		choices=["chiffrer", "dechiffrer", "enigma"],
-		help="Opération à effectuer (chiffrer, dechiffrer ou enigma).")
+		choices=["chiffrer", "dechiffrer","bruteforce"],
+		help="Choix de l'action de chiffrage, de dechiffrage ou de bruteforce.")
 
 	# Argument positionnel "message" : le texte à traiter.
 	# - Obligatoire
@@ -224,15 +232,23 @@ def main(argv=None):
 	# (Une fois que chiffrer / dechiffrer / enigma_chiffrer seront implémentées,
 	#  ces appels retourneront le résultat du chiffrement/déchiffrement.)
 
-	if args.action == "chiffrer":
-		# L'utilisateur veut chiffrer : on appelle chiffrer()
-		resultat = chiffrer(args.message, cle)
-	elif args.action == "dechiffrer":
-		# L'utilisateur veut déchiffrer : on appelle dechiffrer()
-		resultat = dechiffrer(args.message, cle)
-	else:  # args.action == "enigma"
-		# L'utilisateur veut utiliser Enigma César : on appelle enigma_chiffrer()
-		resultat = enigma_chiffrer(args.message, cle)
+	if args.methode == "caesar":
+		# L'utilisateur veut utiliser la methode caesar
+		if args.action == "chiffrer":
+			resultat = chiffrer(args.message, cle)
+		elif args.action == "dechiffrer":
+			resultat = dechiffrer(args.message, cle)
+		else: # args.action == "bruteforce"
+			resultat = bruteforce(args.message)
+	else:  # args.methode == "enigma"
+		# L'utilisateur veut utiliser Enigma César
+		if args.action == "chiffrer":
+			resultat = enigma_chiffrer(args.message, cle)
+		elif args.action == "dechiffrer":
+			resultat = enigma_dechiffrer(args.message, cle)
+		else: #args.action== "bruteforce"
+			resultat = bruteforce(args.message)
+
 
 	# === ÉTAPE 6 : Afficher le résultat ===
 	# print() affiche le résultat à l'écran pour que l'utilisateur le voie.
