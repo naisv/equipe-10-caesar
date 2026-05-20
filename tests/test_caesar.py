@@ -12,7 +12,7 @@ from pathlib import Path
 
 # Permet d'importer main.py depuis le dossier parent
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle # noqa: E402
+from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle, enigma_dechiffrer # noqa: E402
 
 
 # ---------- Chaînes de test officielles — César (spec §7) ----------
@@ -55,6 +55,11 @@ def test_parse_cle_cesar_neg():
 def test_parse_cle_enigma():
     cle="7-16-9"
     assert _parse_cle(cle) == (7,16,9)
+
+def test_enigma_dechiffrer():
+    mot="TQRZEW"
+    cle=(7, 16, 9)
+    assert enigma_dechiffrer(mot,cle) == "MAISON"
 
 # TODO : ajoutez vos propres tests ci-dessous
 #  - test pour les majuscules
