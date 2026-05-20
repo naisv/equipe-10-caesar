@@ -102,6 +102,7 @@ def test_parse_cle_enigma_valide():
     # Vérifie que la chaîne est bien convertie en tuple de 3 entiers
     assert _parse_cle("7-16-9") == (7, 16, 9)
     assert _parse_cle("-1-2-3") == (-1, 2, 3)
+    assert _parse_cle("1--2--3") == (1, -2, -3)
 
 def test_enigma_rejet_cle_invalide():
     # Vérifie qu'une exception ValueError est levée si la clé n'a pas exactement 3 nombres
