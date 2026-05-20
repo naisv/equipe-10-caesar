@@ -170,9 +170,10 @@ def main(argv=None):
 		                      si list, utilise les arguments fournis (utile pour les tests).
 
 	Exemples d'utilisation en terminal :
-		python main.py chiffrer "Veni, vidi, vici!" --cle 42
-		python main.py dechiffrer "Ludy, lyty, lysy!" --cle 42
-		python main.py enigma "MAISON" --cle 7-16-9
+		python main.py ceasar chiffrer "Veni, vidi, vici!" --cle 42
+		python main.py ceasar dechiffrer "Ludy, lyty, lysy!" --cle 42
+		python main.py enigma chifrer "MAISON" --cle 7-16-9
+		python main.py enigma dechifrer "TKQZYV" --cle 7--16-9
 	"""
 	# === ÉTAPE 1 : Créer et configurer le parseur d'arguments ===
 	# argparse est un module qui aide à gérer les arguments en ligne de commande.
