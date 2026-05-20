@@ -160,9 +160,9 @@ def main(argv=None):
 	"""Point d'entrée principal du programme en ligne de commande.
 
 	Cette fonction :
-	1. Parse les arguments saisis par l'utilisateur (action, message, clé)
+	1. Parse les arguments saisis par l'utilisateur (methode, action, message, clé)
 	2. Convertit la clé en type approprié (int ou tuple)
-	3. Appelle la fonction correspondante (chiffrer, dechiffrer ou enigma_chiffrer)
+	3. Appelle la fonction correspondante
 	4. Affiche le résultat
 
 	Paramètre :
