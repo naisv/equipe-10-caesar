@@ -84,9 +84,17 @@ def enigma_dechiffrer(message: str, cles):
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
 
-def bruteforce(message: str):
-	return "TO DO"
+def dechiffrer_force_brute(message):
+	for cle in range(26):
+		message_clair=dechiffrer(message, cle)
+		if reconnaitre(message_clair):
+			break
+	return message_clair
 
+def reconnaitre(message):
+	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
+	#Renvoie un boléen
+	#Au lieu de retourner ceux ayant le meilleur degré, mieux vaut enregistrer le taux de conf de chaque test et prendre le meilleur ?
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
