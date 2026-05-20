@@ -7,13 +7,14 @@ Pour lancer les tests :
     pip install pytest
     pytest -v
 """
+import pytest
 import sys
 from pathlib import Path
 import pytest
 
 # Permet d'importer main.py depuis le dossier parent
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle, enigma_dechiffrer # noqa: E402
+from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle, enigma_dechiffrer
 
 
 # ---------- Chaînes de test officielles — César (spec §7) ----------
@@ -62,6 +63,41 @@ def test_enigma_dechiffrer():
     cle=(7, 16, 9)
     assert enigma_dechiffrer(mot,cle) == "MAISON"
 
+def test_cesar_majuscules_minuscules():
+    # Vérifie que la casse est préservée lors du chiffrement
+    assert chiffrer("Bonjour TOUT Le Monde", 3) == "Erqmrxu WRXW Oh Prqgh"
+    assert dechiffrer("Erqmrxu WRXW Oh Prqgh", 3) == "Bonjour TOUT Le Monde"
+
+def test_enigma_majuscules_minuscules():
+    # Vérifie que Enigma préserve également la casse caractère par caractère
+    assert enigma_chiffrer("AbC", (1, 1, 1)) == "BcD"
+
+def test_cesar_caracteres_speciaux_et_accents():
+    # Les accents doivent être supprimés (é -> e, à -> a) et la ponctuation préservée
+    # "Éléphant, bleu !" devient "Elephant, bleu !" avant chiffrement.
+    # Avec une clé de 1 : E->F, l->m, e->f, p->q, h->i, a->b, n->o, t->u...
+    assert chiffrer("Éléphant, bleu !", 1) == "Fmfqibou, cmfv !"
+
+def test_enigma_caracteres_speciaux_et_accents():
+    # Les caractères non alphabétiques ne doivent pas être modifiés,
+    # mais ils consomment quand même une position dans l'indexation des clés (position % 3)
+    # Position 0 ('é' -> 'e', clé 1) -> 'f'
+    # Position 1 (' ', clé 2) -> ' ' (inchangé)
+    # Position 2 ('o', clé 3) -> 'r'
+    assert enigma_chiffrer("é o", (1, 5, 3)) == "f r"
+
+def test_cesar_tres_grandes_cles():
+    # Une clé de 27 équivaut à une clé de 1 (27 % 26 = 1)
+    assert chiffrer("abc", 27) == "bcd"
+    # Une clé de -25 équivaut à une clé de 1 (-25 % 26 = 1)
+    assert chiffrer("abc", -25) == "bcd"
+    # Une clé géante positive
+    assert chiffrer("abc", 2601) == "bcd"  # 2601 % 26 = 1
+
+def test_cesar_cle_zero():
+    # La clé 0 doit retourner exactement le même message normalisé (sans accents)
+    assert chiffrer("Château", 0) == "Chateau"
+
 def test_parse_cle_enigma_valide():
     # Vérifie que la chaîne est bien convertie en tuple de 3 entiers
     assert _parse_cle("7-16-9") == (7, 16, 9)
@@ -78,6 +114,7 @@ def test_enigma_rejet_cle_invalide():
     with pytest.raises(ValueError):
         cles_invalides = _parse_cle("1-2-3-4")
         enigma_chiffrer("TEST", cles_invalides)
+
 
 # TODO : ajoutez vos propres tests ci-dessous
 #  - test pour les majuscules
