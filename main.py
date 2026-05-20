@@ -84,6 +84,9 @@ def enigma_dechiffrer(message: str, cles):
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
 
+def bruteforce(message: str):
+	return "TO DO"
+
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
