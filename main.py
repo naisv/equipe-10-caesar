@@ -5,7 +5,11 @@ Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 import argparse
 import string
 import unicodedata
+import os
 
+chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
+with open(chemin, "r", encoding="utf-8") as f:
+    dictionnaire = set(f.read().splitlines())
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -91,10 +95,25 @@ def dechiffrer_force_brute(message):
 			break
 	return message_clair
 
-#def reconnaitre(message):
+def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
-	#Au lieu de retourner ceux ayant le meilleur degré, mieux vaut enregistrer le taux de conf de chaque test et prendre le meilleur ?
+	with open(chemin, "r", encoding="utf-8") as f:
+		dictionnaire = set(mot.lower() for mot in f.read().splitlines()) #set() permet un hachage des mots (recherche plus rapide)
+	mots = message.lower().split()
+	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
+	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
+	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
+	#print(mots)
+	#print(mots_nettoyes)
+	if len(mots_nettoyes) == 0:
+		return False
+	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
+	for mot in mots_nettoyes:
+		if mot in dictionnaire:
+			mots_valide+=1
+	score=mots_valide/len(mots_nettoyes)
+	return score>=0.6
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
@@ -271,4 +290,3 @@ if __name__ == "__main__":
 	# Pour les tests : pytest importe ce fichier mais ne lance pas main()
 	# (car __name__ ne vaut pas "__main__" lors d'un import).
 	main()
-
