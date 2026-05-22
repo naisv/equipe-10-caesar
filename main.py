@@ -265,6 +265,9 @@ def main(argv=None):
 		print("1. Cesar (caesar)")
 		print("2. Enigma Cesar (enigma)")
 		choix_m = input("Votre choix (1 ou 2) : ").strip()
+		while choix_m not in ["1","2"] :
+			print("Erreur de saisie, veuillez choisir parmi 1 ou 2")
+			choix_m = input("Votre choix (1 ou 2) : ").strip()
 		methode = "caesar" if choix_m == "1" else "enigma"
 
 		# 2. Choix de l'action
@@ -273,6 +276,9 @@ def main(argv=None):
 		print("2. Dechiffrer")
 		print("3. Force Brute (bruteforce)")
 		choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
+		while choix_a not in ["1","2","3"] :
+			print("Erreur de saisie, veuillez choisir parmi 1, 2 ou 3")
+			choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
 		if choix_a == "1":
 			action = "chiffrer"
 		elif choix_a == "2":
