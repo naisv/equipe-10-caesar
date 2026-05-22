@@ -30,6 +30,10 @@ Le programme offre une double interface (ligne de commande et menu interactif) p
 Assurez-vous d'avoir Python 3.x installe sur votre machine.
 
 ### 1. Cloner le depot
+```bash
+git clone https://github.com/naisv/equipe-10-caesar.git
+cd equipe-10-caesar
+```
 
 ### 2. Installer les dependances (pytest)
 ```bash
