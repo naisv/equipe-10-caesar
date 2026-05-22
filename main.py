@@ -6,11 +6,14 @@ import argparse
 import string
 import unicodedata
 import os
-
-#import du dictionnaire pour le bruteforce
+"""
+import du dictionnaire pour le bruteforce
+On le charge en début pour pouvoir l'utiliser sans avoir à le ré-ouvrir à chaque fois qu'on appelle la 
+fonction force brute ou la fonction reconnaitre (ce qui alllège le programme)
+"""
 chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
 with open(chemin, "r", encoding="utf-8") as f:
-    dictionnaire = set(f.read().splitlines())
+	dictionnaire = set(mot.lower() for mot in f.read().splitlines())
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -117,20 +120,22 @@ def dechiffrer_force_brute(message, methode="caesar"):
 def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
-	with open(chemin, "r", encoding="utf-8") as f:
-		dictionnaire = set(mot.lower() for mot in f.read().splitlines()) #set() permet un hachage des mots (recherche plus rapide)
-	mots = message.lower().split()
 	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
 	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
 	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
 	if len(mots_nettoyes) == 0:
 		return False
 	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
+	compteur=0
 	for mot in mots_nettoyes:
+		compteur+=1
 		if mot in dictionnaire:
 			mots_valide+=1
+		restant=len(mots_nettoyes)-compteur
+		if (mots_valide+restant)/len(mots_nettoyes)<0.8:
+			return False
 	score=mots_valide/len(mots_nettoyes)
-	return score>=0.6
+	return score>=0.8
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
