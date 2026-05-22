@@ -5,7 +5,12 @@ Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 import argparse
 import string
 import unicodedata
+import os
 
+#import du dictionnaire pour le bruteforce
+chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
+with open(chemin, "r", encoding="utf-8") as f:
+    dictionnaire = set(f.read().splitlines())
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -58,7 +63,6 @@ def chiffrer(message: str, cle: int):
 	return chiffrage
 
 def dechiffrer(message: str, cle: int):
-	# TODO: retourner la chaîne déchiffrée (type str).
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_cesar_round_trip
 	# Le test vérifie que dechiffrer(chiffrer(msg, 7), 7) == msg.
@@ -71,7 +75,6 @@ def enigma_chiffrer(message: str, cles):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return chiffrage
-	# TODO: retourner la chaîne chiffrée Enigma César (type str).
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_enigma_officiel_maison
 	# Exemple attendu par le test :
@@ -84,17 +87,50 @@ def enigma_dechiffrer(message: str, cles):
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
 
-def dechiffrer_force_brute(message):
-	for cle in range(26):
-		message_clair=dechiffrer(message, cle)
-		if reconnaitre(message_clair):
-			break
-	return message_clair
+def dechiffrer_force_brute(message, methode="caesar"):
+	"""Décode un message par force brute en testant toutes les combinaisons.
+
+	Si methode='caesar' : balaie 26 clés.
+	Si methode='enigma' : balaie 17 576 combinaisons (3 boucles de 0 à 25).
+	"""
+	message_clair = ""
+
+	if methode == "caesar":
+		for cle in range(26):
+			message_clair = dechiffrer(message, cle)
+			if reconnaitre(message_clair):
+				return message_clair
+
+	elif methode == "enigma":
+		# Triple boucle pour tester toutes les combinaisons de triplets (cle1, cle2, cle3)
+		for c1 in range(26):
+			for c2 in range(26):
+				for c3 in range(26):
+					cles_test = (c1, c2, c3)
+					message_clair = enigma_dechiffrer(message, cles_test)
+
+					if reconnaitre(message_clair):
+						return message_clair
+
+	return "Force brute echouée : aucun message lisible trouve."
 
 def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
-	#Au lieu de retourner ceux ayant le meilleur degré, mieux vaut enregistrer le taux de conf de chaque test et prendre le meilleur ?
+	with open(chemin, "r", encoding="utf-8") as f:
+		dictionnaire = set(mot.lower() for mot in f.read().splitlines()) #set() permet un hachage des mots (recherche plus rapide)
+	mots = message.lower().split()
+	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
+	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
+	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
+	if len(mots_nettoyes) == 0:
+		return False
+	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
+	for mot in mots_nettoyes:
+		if mot in dictionnaire:
+			mots_valide+=1
+	score=mots_valide/len(mots_nettoyes)
+	return score>=0.6
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
@@ -102,7 +138,7 @@ def _parse_cle(texte: str):
 	Cette fonction analyse la clé fournie par l'utilisateur en ligne de commande
 	et la transforme en type Python approprié :
 	- César           : un entier, ex. "42" ou "-42"
-	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9"
+	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9" ou "-7--16-9"
 
 	Paramètre :
 		texte (str) : la chaîne saisie par l'utilisateur après --cle.
@@ -110,30 +146,60 @@ def _parse_cle(texte: str):
 	Retour :
 		int : une clé entière pour César
 		tuple : un tuple de 3 entiers pour Enigma César
-
-	Exemple :
-		_parse_cle("42") → 42 (int)
-		_parse_cle("7-16-9") → (7, 16, 9) (tuple)
 	"""
-	# Vérifier s'il y a un tiret dans la clé (sauf si c'est juste un signe négatif).
-	# lstrip("-") enlève tous les tirets au début, pour distinguer :
-	#   "-42" (entier négatif, pas de tiret après le signe)
-	#   "7-16-9" (trois nombres séparés par des tirets)
-	if "-" in texte.lstrip("-"):
-		# Si oui, c'est une clé Enigma César : on coupe au niveau du "-" et on convertit en entiers.
-		return tuple(int(x) for x in texte.split("-"))
-	# Sinon, c'est une clé César simple : on convertit en entier.
-	return int(texte)
+	# Nettoyage des espaces superflus autour de la chaîne
+	texte = texte.strip()
+
+	# Compter le nombre de tirets qui servent de séparateurs.
+	# Un tiret est un séparateur s'il n'est pas au tout début de la chaîne
+	# et s'il n'est pas précédé immédiatement par un autre tiret (cas d'un nombre négatif).
+	nb_separateurs = 0
+	for i in range(1, len(texte)):
+		if texte[i] == '-' and texte[i - 1] != '-':
+			nb_separateurs += 1
+
+	# Si on détecte des tirets séparateurs, on traite comme une clé Enigma
+	if nb_separateurs > 0:
+		try:
+			# Pour découper proprement malgré les nombres négatifs, on remplace d'abord
+			# les tirets de séparation par des espaces, puis on sépare.
+			# Un tiret est un séparateur s'il est précédé d'un chiffre.
+			liste_caracteres = []
+			for i in range(len(texte)):
+				if i > 0 and texte[i] == '-' and texte[i - 1].isdigit():
+					liste_caracteres.append(' ')
+				else:
+					liste_caracteres.append(texte[i])
+
+			chaine_nettoyee = "".join(liste_caracteres)
+			cles_elements = chaine_nettoyee.split()
+
+			# Validation stricte : la clé Enigma doit contenir exactement 3 nombres
+			if len(cles_elements) != 3:
+				raise ValueError(f"Une cle Enigma doit contenir exactement 3 nombres. Recu : {len(cles_elements)}")
+
+			return tuple(int(x) for x in cles_elements)
+
+		except ValueError as e:
+			# On propage l'erreur avec un message explicite
+			raise ValueError(f"Format de cle Enigma invalide ('a-b-c'). Erreur : {e}")
+
+	# Sinon, c'est une clé César simple (entière, positive ou négative)
+	try:
+		return int(texte)
+	except ValueError:
+		raise ValueError(f"La cle pour Cesar doit etre un entier valide (ex: 42 ou -42). Recu : '{texte}'")
 
 
 
 def main(argv=None):
 	"""Point d'entrée principal du programme en ligne de commande.
+	Contient aussi une interface console
 
 	Cette fonction :
-	1. Parse les arguments saisis par l'utilisateur (action, message, clé)
+	1. Parse les arguments saisis par l'utilisateur (methode, action, message, clé)
 	2. Convertit la clé en type approprié (int ou tuple)
-	3. Appelle la fonction correspondante (chiffrer, dechiffrer ou enigma_chiffrer)
+	3. Appelle la fonction correspondante
 	4. Affiche le résultat
 
 	Paramètre :
@@ -141,9 +207,10 @@ def main(argv=None):
 		                      si list, utilise les arguments fournis (utile pour les tests).
 
 	Exemples d'utilisation en terminal :
-		python main.py chiffrer "Veni, vidi, vici!" --cle 42
-		python main.py dechiffrer "Ludy, lyty, lysy!" --cle 42
-		python main.py enigma "MAISON" --cle 7-16-9
+		python main.py ceasar chiffrer "Veni, vidi, vici!" --cle 42
+		python main.py ceasar dechiffrer "Ludy, lyty, lysy!" --cle 42
+		python main.py enigma chifrer "MAISON" --cle 7-16-9
+		python main.py enigma dechifrer "TKQZYV" --cle 7--16-9
 	"""
 	# === ÉTAPE 1 : Créer et configurer le parseur d'arguments ===
 	# argparse est un module qui aide à gérer les arguments en ligne de commande.
@@ -153,13 +220,21 @@ def main(argv=None):
 
 	# === ÉTAPE 2 : Définir les arguments attendus ===
 
+	# Argument positionnel "methode" : l'opération à effectuer.
+	# - Obligatoire (pas de -- devant)
+	# - Doit être l'une des valeurs listées dans "choices"
+	parser.add_argument(
+		"methode",
+		choices=["caesar", "enigma"],
+		help="Type de chiffrage (ceasar ou enigma).")
+
 	# Argument positionnel "action" : l'opération à effectuer.
 	# - Obligatoire (pas de -- devant)
 	# - Doit être l'une des valeurs listées dans "choices"
 	parser.add_argument(
 		"action",
-		choices=["chiffrer", "dechiffrer", "enigma"],
-		help="Opération à effectuer (chiffrer, dechiffrer ou enigma).")
+		choices=["chiffrer", "dechiffrer","bruteforce"],
+		help="Choix de l'action de chiffrage, de dechiffrage ou de bruteforce.")
 
 	# Argument positionnel "message" : le texte à traiter.
 	# - Obligatoire
@@ -172,47 +247,86 @@ def main(argv=None):
 	# - Obligatoire via required=True
 	# - Peut être un entier (César) ou trois entiers séparés par des tirets (Enigma César)
 	parser.add_argument(
-		"-c", "--cle", required=True,
+		"-c", "--cle", required=False,
 		help="Clé : un entier (ex. '42') ou 'a-b-c' (ex. '7-16-9') pour Enigma.")
 
-	# === ÉTAPE 3 : Analyser les arguments ===
-	# parse_args() transforme les arguments en un objet "Namespace" avec des attributs.
-	# Si argv=None, il lit automatiquement depuis la ligne de commande.
-	# Sinon, il utilise la liste fournie.
-	args = parser.parse_args(argv)
+	# On regarde si aucun argument n'a ete passe au terminal
+	import sys
+	un_argument_est_present = (argv is not None and len(argv) > 0) or (argv is None and len(sys.argv) > 1)
 
-	# Maintenant, on peut accéder aux arguments via :
-	# - args.action (ex. "chiffrer")
-	# - args.message (ex. "Veni, vidi, vici!")
-	# - args.cle (ex. "42" ou "7-16-9", toujours en chaîne de caractères)
+	if not un_argument_est_present:
+		# === MODE CONSOLE INTERACTIF ===
+		print("=" * 50)
+		print("       BIENVENUE DANS L'OUTIL DE CHIFFREMENT     ")
+		print("=" * 50)
 
-	# === ÉTAPE 4 : Convertir la clé (texte) en type approprié ===
-	# _parse_cle() transforme la clé en int (César) ou tuple (Enigma).
-	cle = _parse_cle(args.cle)
+		# 1. Choix de la méthode
+		print("\nChoisissez la methode :")
+		print("1. Cesar (caesar)")
+		print("2. Enigma Cesar (enigma)")
+		choix_m = input("Votre choix (1 ou 2) : ").strip()
+		methode = "caesar" if choix_m == "1" else "enigma"
 
-	# === ÉTAPE 5 : Choisir et exécuter l'opération ===
-	# Selon l'action, on appelle la fonction appropriée.
-	# (Une fois que chiffrer / dechiffrer / enigma_chiffrer seront implémentées,
-	#  ces appels retourneront le résultat du chiffrement/déchiffrement.)
+		# 2. Choix de l'action
+		print("\nChoisissez l'action :")
+		print("1. Chiffrer")
+		print("2. Dechiffrer")
+		print("3. Force Brute (bruteforce)")
+		choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
+		if choix_a == "1":
+			action = "chiffrer"
+		elif choix_a == "2":
+			action = "dechiffrer"
+		else:
+			action = "bruteforce"
 
-	if args.action == "chiffrer":
-		# L'utilisateur veut chiffrer : on appelle chiffrer()
-		resultat = chiffrer(args.message, cle)
-	elif args.action == "dechiffrer":
-		# L'utilisateur veut déchiffrer : on appelle dechiffrer()
-		resultat = dechiffrer(args.message, cle)
-	else:  # args.action == "enigma"
-		# L'utilisateur veut utiliser Enigma César : on appelle enigma_chiffrer()
-		resultat = enigma_chiffrer(args.message, cle)
+		# 3. Saisie du message
+		message = input("\nEntrez votre message ou le nom du fichier (.txt) : ").strip()
+
+		# 4. Saisie de la clé (sauf si brute force)
+		if action != "bruteforce":
+			if methode == "caesar":
+				cle_texte = input("Entrez la cle (ex: 42) : ").strip()
+				cle = _parse_cle(cle_texte)
+			else :
+				cle_texte = input("Entrez la cle (ex: 2-50--20) : ").strip()
+				cle = _parse_cle(cle_texte)
+		else:
+			cle = None
+	else:
+		# === MODE COMMANDE TERMINAL (ARGPARSE) ===
+		args = parser.parse_args(argv)
+
+		# Validation rapide pour s'assurer que si le terminal est utilise, tout est fourni
+		if not (args.methode and args.action and args.message):
+			print("Erreur : En mode terminal, vous devez fournir --methode, --action et --message.")
+			exit()
+
+		methode = args.methode
+		action = args.action
+		message = args.message
+		cle = _parse_cle(args.cle) if args.cle else None
+
+	if methode == "caesar":
+		if action == "chiffrer":
+			resultat = chiffrer(message, cle)
+		elif action == "dechiffrer":
+			resultat = dechiffrer(message, cle)
+		else:
+			resultat = dechiffrer_force_brute(message, methode="caesar")
+	else:
+		if action == "chiffrer":
+			resultat = enigma_chiffrer(message, cle)
+		elif action == "dechiffrer":
+			resultat = enigma_dechiffrer(message, cle)
+		else:
+			resultat = dechiffrer_force_brute(message, methode="enigma")
+
 
 	# === ÉTAPE 6 : Afficher le résultat ===
 	# print() affiche le résultat à l'écran pour que l'utilisateur le voie.
+	print("\nResultat :")
 	print(resultat)
-	
-	# TODO : Une fois les fonctions de base implémentées, vous pourrez :
-	# - Ajouter des options pour lire/écrire depuis des fichiers
-	# - Implémenter le mode brute-force
-	# - Ajouter d'autres fonctionnalités
 
 
 if __name__ == "__main__":
@@ -225,4 +339,3 @@ if __name__ == "__main__":
 	# Pour les tests : pytest importe ce fichier mais ne lance pas main()
 	# (car __name__ ne vaut pas "__main__" lors d'un import).
 	main()
-
