@@ -14,7 +14,7 @@ import pytest
 
 # Permet d'importer main.py depuis le dossier parent
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle, enigma_dechiffrer
+from main import chiffrer, dechiffrer, enigma_chiffrer, _parse_cle, enigma_dechiffrer, dechiffrer_force_brute
 
 
 # ---------- Chaînes de test officielles — César (spec §7) ----------
@@ -115,6 +115,46 @@ def test_enigma_rejet_cle_invalide():
     with pytest.raises(ValueError):
         cles_invalides = _parse_cle("1-2-3-4")
         enigma_chiffrer("TEST", cles_invalides)
+
+
+def test_brute_force_caesar_succes():
+    """Vérifie que la force brute César retrouve un message complexe présent dans le dictionnaire."""
+    # Un message composé de mots simples susceptibles d'être dans votre dictionnaire_fr.txt
+    message_original = "Appartement"
+    cle_secrete = 14
+
+    # On génère le message chiffré
+    message_chiffre = chiffrer(message_original, cle_secrete)
+
+    # On lance la force brute
+    message_decouvert = dechiffrer_force_brute(message_chiffre, methode="caesar")
+
+    # Le message retourné doit correspondre au message d'origine (sans accents)
+    assert message_decouvert == message_original
+
+
+def test_brute_force_enigma_succes():
+    """Vérifie que la triple boucle Enigma parvient à casser le chiffrement cyclique."""
+    # Des mots clairs pour maximiser le score de reconnaissance
+    message_original = "Technologie"
+    cles_secretes = (3, 11, 19)
+
+    message_chiffre = enigma_chiffrer(message_original, cles_secretes)
+    message_decouvert = dechiffrer_force_brute(message_chiffre, methode="enigma")
+
+    assert message_decouvert == message_original
+
+
+def test_brute_force_echec_dictionnaire():
+    """Vérifie le comportement du programme si le texte ne contient aucun mot du dictionnaire."""
+    # Une suite de caractères aléatoires qui n'aura jamais un score de 60% dans le dictionnaire
+    message_inconnu = "xyzqfdj"
+    message_chiffre = chiffrer(message_inconnu, 5)
+
+    resultat = dechiffrer_force_brute(message_chiffre, methode="caesar")
+
+    # La fonction doit renvoyer le message d'erreur prévu à la fin de votre boucle
+    assert resultat == "Force brute echouée : aucun message lisible trouve."
 
 
 # TODO : ajoutez vos propres tests ci-dessous
