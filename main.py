@@ -7,6 +7,7 @@ import string
 import unicodedata
 import os
 
+#import du dictionnaire pour le bruteforce
 chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
 with open(chemin, "r", encoding="utf-8") as f:
     dictionnaire = set(f.read().splitlines())
@@ -62,7 +63,6 @@ def chiffrer(message: str, cle: int):
 	return chiffrage
 
 def dechiffrer(message: str, cle: int):
-	# TODO: retourner la chaîne déchiffrée (type str).
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_cesar_round_trip
 	# Le test vérifie que dechiffrer(chiffrer(msg, 7), 7) == msg.
@@ -75,7 +75,6 @@ def enigma_chiffrer(message: str, cles):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return chiffrage
-	# TODO: retourner la chaîne chiffrée Enigma César (type str).
 	# Exigence visible dans tests/test_caesar.py :
 	# - test_enigma_officiel_maison
 	# Exemple attendu par le test :
@@ -124,8 +123,6 @@ def reconnaitre(message):
 	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
 	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
 	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
-	#print(mots)
-	#print(mots_nettoyes)
 	if len(mots_nettoyes) == 0:
 		return False
 	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
@@ -197,6 +194,7 @@ def _parse_cle(texte: str):
 
 def main(argv=None):
 	"""Point d'entrée principal du programme en ligne de commande.
+	Contient aussi une interface console
 
 	Cette fonction :
 	1. Parse les arguments saisis par l'utilisateur (methode, action, message, clé)
@@ -249,7 +247,7 @@ def main(argv=None):
 	# - Obligatoire via required=True
 	# - Peut être un entier (César) ou trois entiers séparés par des tirets (Enigma César)
 	parser.add_argument(
-		"-c", "--cle", required=True,
+		"-c", "--cle", required=False,
 		help="Clé : un entier (ex. '42') ou 'a-b-c' (ex. '7-16-9') pour Enigma.")
 
 	# On regarde si aucun argument n'a ete passe au terminal
@@ -329,11 +327,6 @@ def main(argv=None):
 	# print() affiche le résultat à l'écran pour que l'utilisateur le voie.
 	print("\nResultat :")
 	print(resultat)
-	
-	# TODO : Une fois les fonctions de base implémentées, vous pourrez :
-	# - Ajouter des options pour lire/écrire depuis des fichiers
-	# - Implémenter le mode brute-force
-	# - Ajouter d'autres fonctionnalités
 
 
 if __name__ == "__main__":
