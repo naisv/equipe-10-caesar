@@ -88,12 +88,32 @@ def enigma_dechiffrer(message: str, cles):
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
 
-def dechiffrer_force_brute(message):
-	for cle in range(26):
-		message_clair=dechiffrer(message, cle)
-		if reconnaitre(message_clair):
-			break
-	return message_clair
+def dechiffrer_force_brute(message, methode="caesar"):
+	"""Décode un message par force brute en testant toutes les combinaisons.
+
+	Si methode='caesar' : balaie 26 clés.
+	Si methode='enigma' : balaie 17 576 combinaisons (3 boucles de 0 à 25).
+	"""
+	message_clair = ""
+
+	if methode == "caesar":
+		for cle in range(26):
+			message_clair = dechiffrer(message, cle)
+			if reconnaitre(message_clair):
+				return message_clair
+
+	elif methode == "enigma":
+		# Triple boucle pour tester toutes les combinaisons de triplets (cle1, cle2, cle3)
+		for c1 in range(26):
+			for c2 in range(26):
+				for c3 in range(26):
+					cles_test = (c1, c2, c3)
+					message_clair = enigma_dechiffrer(message, cles_test)
+
+					if reconnaitre(message_clair):
+						return message_clair
+
+	return "Force brute echouée : aucun message lisible trouve."
 
 def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
@@ -295,14 +315,14 @@ def main(argv=None):
 		elif action == "dechiffrer":
 			resultat = dechiffrer(message, cle)
 		else:
-			resultat = dechiffrer_force_brute(message)
+			resultat = dechiffrer_force_brute(message, methode="caesar")
 	else:
 		if action == "chiffrer":
 			resultat = enigma_chiffrer(message, cle)
 		elif action == "dechiffrer":
 			resultat = enigma_dechiffrer(message, cle)
 		else:
-			resultat = dechiffrer_force_brute(message)
+			resultat = dechiffrer_force_brute(message, methode="enigma")
 
 
 	# === ÉTAPE 6 : Afficher le résultat ===
