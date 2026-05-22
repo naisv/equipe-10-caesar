@@ -259,7 +259,7 @@ def main(argv=None):
 		elif args.action == "dechiffrer":
 			resultat = dechiffrer(args.message, cle)
 		else: # args.action == "bruteforce"
-			resultat = bruteforce(args.message)
+			resultat = dechiffrer_force_brute(args.message)
 	else:  # args.methode == "enigma"
 		# L'utilisateur veut utiliser Enigma César
 		if args.action == "chiffrer":
@@ -267,7 +267,7 @@ def main(argv=None):
 		elif args.action == "dechiffrer":
 			resultat = enigma_dechiffrer(args.message, cle)
 		else: #args.action== "bruteforce"
-			resultat = bruteforce(args.message)
+			resultat = dechiffrer_force_brute(args.message)
 
 
 	# === ÉTAPE 6 : Afficher le résultat ===
