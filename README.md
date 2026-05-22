@@ -32,8 +32,9 @@ Assurez-vous d'avoir Python 3.x installe sur votre machine.
 ### 1. Cloner le depot
 
 ### 2. Installer les dependances (pytest)
+```bash
 python3 -m pip install -r requirements.txt
-
+```
 
 ## Utilisation
 
@@ -47,11 +48,13 @@ python main.py
 Vous pouvez specifier l'ensemble des arguments directement dans le terminal selon la syntaxe suivante :
 python main.py [caesar|enigma] [chiffrer|dechiffrer|bruteforce] "[message_ou_fichier]" -c [valeur_cle]
 exemples : 
->>> python main.py caesar chiffrer "Veni, vidi, vici!" -c 42
->>> python main.py caesar dechiffrer "Ludy, lyty, lysy!" -c 42
->>> python main.py enigma chiffrer "MAISON" -c 7-16-9
->>> python main.py enigma bruteforce "TQRZEW" 
->>> python main.py caesar chiffrer message.txt -c 15
+```bash
+python main.py caesar chiffrer "Veni, vidi, vici!" -c 42
+python main.py caesar dechiffrer "Ludy, lyty, lysy!" -c 42
+python main.py enigma chiffrer "MAISON" -c 7-16-9
+python main.py enigma bruteforce "TQRZEW" 
+python main.py caesar chiffrer message.txt -c 15
+```
 
 ## Structure du Code et Architecture
 Le script main.py centralise la logique et la gestion des interfaces :
@@ -72,5 +75,7 @@ Le script main.py centralise la logique et la gestion des interfaces :
 
 ## Tests Unitaires (pytest)
 Le projet integre une suite de tests unitaires complete pour valider le comportement de chaque fonction. Pour executer les tests :
+```bash
 pytest -v
+```
 Les tests valident notamment la conservation de la casse, la suppression des accents, le modulo des tres grandes cles (positives et negatives), la detection et le rejet des cles Enigma mal formatees, ainsi que le succes des algorithmes de force brute.
