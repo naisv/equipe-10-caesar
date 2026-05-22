@@ -232,46 +232,82 @@ def main(argv=None):
 		"-c", "--cle", required=True,
 		help="Clé : un entier (ex. '42') ou 'a-b-c' (ex. '7-16-9') pour Enigma.")
 
-	# === ÉTAPE 3 : Analyser les arguments ===
-	# parse_args() transforme les arguments en un objet "Namespace" avec des attributs.
-	# Si argv=None, il lit automatiquement depuis la ligne de commande.
-	# Sinon, il utilise la liste fournie.
-	args = parser.parse_args(argv)
+	# On regarde si aucun argument n'a ete passe au terminal
+	import sys
+	un_argument_est_present = (argv is not None and len(argv) > 0) or (argv is None and len(sys.argv) > 1)
 
-	# Maintenant, on peut accéder aux arguments via :
-	# - args.action (ex. "chiffrer")
-	# - args.message (ex. "Veni, vidi, vici!")
-	# - args.cle (ex. "42" ou "7-16-9", toujours en chaîne de caractères)
+	if not un_argument_est_present:
+		# === MODE CONSOLE INTERACTIF ===
+		print("=" * 50)
+		print("       BIENVENUE DANS L'OUTIL DE CHIFFREMENT     ")
+		print("=" * 50)
 
-	# === ÉTAPE 4 : Convertir la clé (texte) en type approprié ===
-	# _parse_cle() transforme la clé en int (César) ou tuple (Enigma).
-	cle = _parse_cle(args.cle)
+		# 1. Choix de la méthode
+		print("\nChoisissez la methode :")
+		print("1. Cesar (caesar)")
+		print("2. Enigma Cesar (enigma)")
+		choix_m = input("Votre choix (1 ou 2) : ").strip()
+		methode = "caesar" if choix_m == "1" else "enigma"
 
-	# === ÉTAPE 5 : Choisir et exécuter l'opération ===
-	# Selon l'action, on appelle la fonction appropriée.
-	# (Une fois que chiffrer / dechiffrer / enigma_chiffrer seront implémentées,
-	#  ces appels retourneront le résultat du chiffrement/déchiffrement.)
+		# 2. Choix de l'action
+		print("\nChoisissez l'action :")
+		print("1. Chiffrer")
+		print("2. Dechiffrer")
+		print("3. Force Brute (bruteforce)")
+		choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
+		if choix_a == "1":
+			action = "chiffrer"
+		elif choix_a == "2":
+			action = "dechiffrer"
+		else:
+			action = "bruteforce"
 
-	if args.methode == "caesar":
-		# L'utilisateur veut utiliser la methode caesar
-		if args.action == "chiffrer":
-			resultat = chiffrer(args.message, cle)
-		elif args.action == "dechiffrer":
-			resultat = dechiffrer(args.message, cle)
-		else: # args.action == "bruteforce"
-			resultat = dechiffrer_force_brute(args.message)
-	else:  # args.methode == "enigma"
-		# L'utilisateur veut utiliser Enigma César
-		if args.action == "chiffrer":
-			resultat = enigma_chiffrer(args.message, cle)
-		elif args.action == "dechiffrer":
-			resultat = enigma_dechiffrer(args.message, cle)
-		else: #args.action== "bruteforce"
-			resultat = dechiffrer_force_brute(args.message)
+		# 3. Saisie du message
+		message = input("\nEntrez votre message ou le nom du fichier (.txt) : ").strip()
+
+		# 4. Saisie de la clé (sauf si brute force)
+		if action != "bruteforce":
+			if methode == "caesar":
+				cle_texte = input("Entrez la cle (ex: 42) : ").strip()
+				cle = _parse_cle(cle_texte)
+			else :
+				cle_texte = input("Entrez la cle (ex: 2-50--20) : ").strip()
+				cle = _parse_cle(cle_texte)
+		else:
+			cle = None
+	else:
+		# === MODE COMMANDE TERMINAL (ARGPARSE) ===
+		args = parser.parse_args(argv)
+
+		# Validation rapide pour s'assurer que si le terminal est utilise, tout est fourni
+		if not (args.methode and args.action and args.message):
+			print("Erreur : En mode terminal, vous devez fournir --methode, --action et --message.")
+			exit()
+
+		methode = args.methode
+		action = args.action
+		message = args.message
+		cle = _parse_cle(args.cle) if args.cle else None
+
+	if methode == "caesar":
+		if action == "chiffrer":
+			resultat = chiffrer(message, cle)
+		elif action == "dechiffrer":
+			resultat = dechiffrer(message, cle)
+		else:
+			resultat = dechiffrer_force_brute(message)
+	else:
+		if action == "chiffrer":
+			resultat = enigma_chiffrer(message, cle)
+		elif action == "dechiffrer":
+			resultat = enigma_dechiffrer(message, cle)
+		else:
+			resultat = dechiffrer_force_brute(message)
 
 
 	# === ÉTAPE 6 : Afficher le résultat ===
 	# print() affiche le résultat à l'écran pour que l'utilisateur le voie.
+	print("\nResultat :")
 	print(resultat)
 	
 	# TODO : Une fois les fonctions de base implémentées, vous pourrez :
