@@ -5,7 +5,11 @@ Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
 import argparse
 import string
 import unicodedata
+import os
 
+chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
+with open(chemin, "r", encoding="utf-8") as f:
+    dictionnaire = set(f.read().splitlines())
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -84,6 +88,32 @@ def enigma_dechiffrer(message: str, cles):
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return dechiffrage
 
+def dechiffrer_force_brute(message):
+	for cle in range(26):
+		message_clair=dechiffrer(message, cle)
+		if reconnaitre(message_clair):
+			break
+	return message_clair
+
+def reconnaitre(message):
+	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
+	#Renvoie un boléen
+	with open(chemin, "r", encoding="utf-8") as f:
+		dictionnaire = set(mot.lower() for mot in f.read().splitlines()) #set() permet un hachage des mots (recherche plus rapide)
+	mots = message.lower().split()
+	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
+	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
+	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
+	#print(mots)
+	#print(mots_nettoyes)
+	if len(mots_nettoyes) == 0:
+		return False
+	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
+	for mot in mots_nettoyes:
+		if mot in dictionnaire:
+			mots_valide+=1
+	score=mots_valide/len(mots_nettoyes)
+	return score>=0.6
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
@@ -91,7 +121,7 @@ def _parse_cle(texte: str):
 	Cette fonction analyse la clé fournie par l'utilisateur en ligne de commande
 	et la transforme en type Python approprié :
 	- César           : un entier, ex. "42" ou "-42"
-	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9"
+	- Enigma César    : trois entiers séparés par des tirets, ex. "7-16-9" ou "-7--16-9"
 
 	Paramètre :
 		texte (str) : la chaîne saisie par l'utilisateur après --cle.
@@ -99,20 +129,49 @@ def _parse_cle(texte: str):
 	Retour :
 		int : une clé entière pour César
 		tuple : un tuple de 3 entiers pour Enigma César
-
-	Exemple :
-		_parse_cle("42") → 42 (int)
-		_parse_cle("7-16-9") → (7, 16, 9) (tuple)
 	"""
-	# Vérifier s'il y a un tiret dans la clé (sauf si c'est juste un signe négatif).
-	# lstrip("-") enlève tous les tirets au début, pour distinguer :
-	#   "-42" (entier négatif, pas de tiret après le signe)
-	#   "7-16-9" (trois nombres séparés par des tirets)
-	if "-" in texte.lstrip("-"):
-		# Si oui, c'est une clé Enigma César : on coupe au niveau du "-" et on convertit en entiers.
-		return tuple(int(x) for x in texte.split("-"))
-	# Sinon, c'est une clé César simple : on convertit en entier.
-	return int(texte)
+	# Nettoyage des espaces superflus autour de la chaîne
+	texte = texte.strip()
+
+	# Compter le nombre de tirets qui servent de séparateurs.
+	# Un tiret est un séparateur s'il n'est pas au tout début de la chaîne
+	# et s'il n'est pas précédé immédiatement par un autre tiret (cas d'un nombre négatif).
+	nb_separateurs = 0
+	for i in range(1, len(texte)):
+		if texte[i] == '-' and texte[i - 1] != '-':
+			nb_separateurs += 1
+
+	# Si on détecte des tirets séparateurs, on traite comme une clé Enigma
+	if nb_separateurs > 0:
+		try:
+			# Pour découper proprement malgré les nombres négatifs, on remplace d'abord
+			# les tirets de séparation par des espaces, puis on sépare.
+			# Un tiret est un séparateur s'il est précédé d'un chiffre.
+			liste_caracteres = []
+			for i in range(len(texte)):
+				if i > 0 and texte[i] == '-' and texte[i - 1].isdigit():
+					liste_caracteres.append(' ')
+				else:
+					liste_caracteres.append(texte[i])
+
+			chaine_nettoyee = "".join(liste_caracteres)
+			cles_elements = chaine_nettoyee.split()
+
+			# Validation stricte : la clé Enigma doit contenir exactement 3 nombres
+			if len(cles_elements) != 3:
+				raise ValueError(f"Une cle Enigma doit contenir exactement 3 nombres. Recu : {len(cles_elements)}")
+
+			return tuple(int(x) for x in cles_elements)
+
+		except ValueError as e:
+			# On propage l'erreur avec un message explicite
+			raise ValueError(f"Format de cle Enigma invalide ('a-b-c'). Erreur : {e}")
+
+	# Sinon, c'est une clé César simple (entière, positive ou négative)
+	try:
+		return int(texte)
+	except ValueError:
+		raise ValueError(f"La cle pour Cesar doit etre un entier valide (ex: 42 ou -42). Recu : '{texte}'")
 
 
 
@@ -120,9 +179,9 @@ def main(argv=None):
 	"""Point d'entrée principal du programme en ligne de commande.
 
 	Cette fonction :
-	1. Parse les arguments saisis par l'utilisateur (action, message, clé)
+	1. Parse les arguments saisis par l'utilisateur (methode, action, message, clé)
 	2. Convertit la clé en type approprié (int ou tuple)
-	3. Appelle la fonction correspondante (chiffrer, dechiffrer ou enigma_chiffrer)
+	3. Appelle la fonction correspondante
 	4. Affiche le résultat
 
 	Paramètre :
@@ -130,9 +189,10 @@ def main(argv=None):
 		                      si list, utilise les arguments fournis (utile pour les tests).
 
 	Exemples d'utilisation en terminal :
-		python main.py chiffrer "Veni, vidi, vici!" --cle 42
-		python main.py dechiffrer "Ludy, lyty, lysy!" --cle 42
-		python main.py enigma "MAISON" --cle 7-16-9
+		python main.py ceasar chiffrer "Veni, vidi, vici!" --cle 42
+		python main.py ceasar dechiffrer "Ludy, lyty, lysy!" --cle 42
+		python main.py enigma chifrer "MAISON" --cle 7-16-9
+		python main.py enigma dechifrer "TKQZYV" --cle 7--16-9
 	"""
 	# === ÉTAPE 1 : Créer et configurer le parseur d'arguments ===
 	# argparse est un module qui aide à gérer les arguments en ligne de commande.
@@ -230,4 +290,3 @@ if __name__ == "__main__":
 	# Pour les tests : pytest importe ce fichier mais ne lance pas main()
 	# (car __name__ ne vaut pas "__main__" lors d'un import).
 	main()
-
