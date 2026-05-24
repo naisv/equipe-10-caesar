@@ -9,7 +9,7 @@ import os
 """
 import du dictionnaire pour le bruteforce
 On le charge en début pour pouvoir l'utiliser sans avoir à le ré-ouvrir à chaque fois qu'on appelle la 
-fonction force brute ou la fonction reconnaitre (ce qui alllège le programme)
+fonction force brute ou la fonction reconnaitre (ce qui allège le programme)
 """
 chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
 with open(chemin, "r", encoding="utf-8") as f:
@@ -34,7 +34,7 @@ def recuperer_texte(texte):
 """Cette fonction chiffre en César avec un message et une clé
 Elle vérifie si le texte donné est un texte ou le nom d'un fichier et récupère alors le texte du fichier
 Elle fait appel à une fonction pour enlever les accents du texte
-Elle chiffre selon la clé donnée en paramètrre"""
+Elle chiffre selon la clé donnée en paramètre"""
 def chiffrer(message: str, cle: int):
 	# Exigences visibles dans tests/test_caesar.py :
 	# - test_cesar_officiel_cle_42
@@ -74,6 +74,8 @@ def dechiffrer(message: str, cle: int):
 
 def enigma_chiffrer(message: str, cles):
 	chiffrage=""
+	if message.endswith(".txt"):
+		message=recuperer_texte(message)
 	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
@@ -85,6 +87,8 @@ def enigma_chiffrer(message: str, cles):
 	pass
 def enigma_dechiffrer(message: str, cles):
 	dechiffrage=""
+	if message.endswith(".txt"):
+		message=recuperer_texte(message)
 	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
@@ -292,7 +296,7 @@ def main(argv=None):
 			action = "bruteforce"
 
 		# 3. Saisie du message
-		message = input("\nEntrez votre message ou le nom du fichier (.txt) : ").strip()
+		message = input("\nEntrez votre message ou le nom complet du fichier (exemple.txt) : ").strip()
 
 		# 4. Saisie de la clé (sauf si brute force)
 		if action != "bruteforce":
