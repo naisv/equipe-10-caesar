@@ -1,6 +1,17 @@
 """
 MGA802 — Mini-Projet A : Chiffrement de César
 Equipe 10 : Paul Serra, Axel Walraet-Triolet, Naïs Vigroux
+
+Ce programme permet de chiffrer ou dechiffrer des messages a l'aide de la methode de caesar ou de
+enigma caesar. Il contient egalement un mode de bruteforce pour decoder un message crypté dont on
+me connait pas la clé.
+Voici des exemples d'utilisation du programme dans le terminal :
+		python main.py ceasar chiffrer "Veni, vidi, vici!" --cle 42
+		python main.py ceasar dechiffrer "Ludy, lyty, lysy!" --cle 42
+		python main.py enigma chifrer "MAISON" --cle 7-16-9
+		python main.py enigma dechifrer "TKQZYV" --cle 7--16-9
+
+Il est aussi utilisable dans l'interface lors du run.
 """
 import argparse
 import string
