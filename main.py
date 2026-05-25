@@ -46,16 +46,7 @@ def recuperer_texte(texte):
 Elle vérifie si le texte donné est un texte ou le nom d'un fichier et récupère alors le texte du fichier
 Elle fait appel à une fonction pour enlever les accents du texte
 Elle chiffre selon la clé donnée en paramètre"""
-
 def chiffrer(message: str, cle: int):
-	# Exigences visibles dans tests/test_caesar.py :
-	# - test_cesar_officiel_cle_42
-	# - test_cesar_officiel_cle_neg_42
-	# - test_cesar_cle_zero_identite
-	# Exemples attendus par les tests :
-	# - chiffrer("Veni, vidi, vici!", 42) -> "Ludy, lyty, lysy!"
-	# - chiffrer("Veni, vidi, vici!", -42) -> "Foxs, fsns, fsms!"
-	# - chiffrer("Tout pareil.", 0) -> "Tout pareil."
 	if message.endswith(".txt"):
 		message=recuperer_texte(message)
 	message_propre = supprimer_accents(message) #On retire les accents de la chaîne de caractères fournie
@@ -78,9 +69,6 @@ def chiffrer(message: str, cle: int):
 	return chiffrage
 
 def dechiffrer(message: str, cle: int):
-	# Exigence visible dans tests/test_caesar.py :
-	# - test_cesar_round_trip
-	# Le test vérifie que dechiffrer(chiffrer(msg, 7), 7) == msg.
 	dechiffrage=chiffrer(message, -cle)
 	return dechiffrage
 
@@ -92,10 +80,6 @@ def enigma_chiffrer(message: str, cles):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
 	return chiffrage
-	# Exigence visible dans tests/test_caesar.py :
-	# - test_enigma_officiel_maison
-	# Exemple attendu par le test :
-	# - enigma_chiffrer("MAISON", (7, 16, 9)) -> "TQRZEW"
 	pass
 def enigma_dechiffrer(message: str, cles):
 	dechiffrage=""
@@ -352,12 +336,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-	# Ce bloc s'exécute SEULEMENT si ce fichier est lancé directement depuis le terminal.
-	# Exemple : python main.py chiffrer "Veni" --cle 42
-	#
-	# Il ne s'exécute PAS si on fait "import main" depuis un autre fichier Python.
-	# Cela permet d'utiliser le code de main.py dans d'autres projets sans lancer main().
-	# 
-	# Pour les tests : pytest importe ce fichier mais ne lance pas main()
-	# (car __name__ ne vaut pas "__main__" lors d'un import).
 	main()
