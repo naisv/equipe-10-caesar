@@ -35,6 +35,7 @@ def recuperer_texte(texte):
 Elle vérifie si le texte donné est un texte ou le nom d'un fichier et récupère alors le texte du fichier
 Elle fait appel à une fonction pour enlever les accents du texte
 Elle chiffre selon la clé donnée en paramètre"""
+
 def chiffrer(message: str, cle: int):
 	# Exigences visibles dans tests/test_caesar.py :
 	# - test_cesar_officiel_cle_42
@@ -124,15 +125,13 @@ def dechiffrer_force_brute(message, methode="caesar"):
 def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
-	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
+	mots = message.lower().replace("'", " ").split() #remplace ' par un espace
 	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
 	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
 	if len(mots_nettoyes) == 0:
 		return False
 	mots_valide=0 #Nombre de mots valide (provenant du dictionnaire)
-	compteur=0
 	for mot in mots_nettoyes:
-		compteur+=1
 		if mot in dictionnaire:
 			mots_valide+=1
 	score=mots_valide/len(mots_nettoyes)
