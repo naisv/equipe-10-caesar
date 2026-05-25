@@ -20,7 +20,7 @@ Le programme offre une double interface (ligne de commande et menu interactif) p
 * Prise en charge des fichiers : Si l'argument ou l'entree fournie se termine par .txt, le programme extrait automatiquement le texte du fichier pour le traiter.
 * Normalisation du texte : Suppression automatique des accents (conversion via la forme de normalisation NFD) avant le chiffrement.
 * Respect de la casse et ponctuation : Les majuscules et les minuscules sont conservees lors du traitement, tandis que les caracteres non alphabetiques restent inchanges.
-* Force Brute Automatique : Analyse automatique des textes dechiffres grace a un dictionnaire francais (dictionnaire_fr.txt). Le programme valide la pertinence du dechiffrement des qu'un seuil de 60% de mots valides est atteint.
+* Force Brute Automatique : Analyse automatique des textes dechiffres grace a un dictionnaire francais (dictionnaire_fr.txt). Le programme valide la pertinence du dechiffrement dès lors que plus de 80% des mots du message sont présents dans le dictionnaire.
 
 ---
 
@@ -72,7 +72,7 @@ Le script main.py centralise la logique et la gestion des interfaces :
 
 * dechiffrer_force_brute(message, methode) : Aligne une boucle simple (26 cles pour Cesar) ou une triple boucle imbriquee (17 576 combinaisons pour Enigma) pour retrouver le message clair.
 
-* reconnaitre(message) : Nettoie le message des symboles de ponctuation et verifie la presence des mots dans dictionnaire_fr.txt pour calculer un score de confiance.
+* reconnaitre(message) : Nettoie le message des symboles de ponctuation et verifie la presence des mots dans dictionnaire_fr.txt pour calculer un score de confiance et valider ou non le déchiffrement du message.
 
 * _parse_cle(texte) : Analyse la chaine saisie pour la convertir en int (Cesar) ou en tuple d'entiers (Enigma), tout en gerant de maniere robuste les nombres negatifs et en validant le format requis.
 
