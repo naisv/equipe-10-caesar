@@ -17,11 +17,14 @@ import argparse
 import string
 import unicodedata
 import os
-
-#import du dictionnaire pour le bruteforce
+"""
+import du dictionnaire pour le bruteforce
+On le charge en début pour pouvoir l'utiliser sans avoir à le ré-ouvrir à chaque fois qu'on appelle la 
+fonction force brute ou la fonction reconnaitre (ce qui allège le programme)
+"""
 chemin = os.path.join(os.path.dirname(__file__), "dictionnaire_fr.txt")
 with open(chemin, "r", encoding="utf-8") as f:
-    dictionnaire = set(f.read().splitlines())
+	dictionnaire = set(mot.lower() for mot in f.read().splitlines())
 
 #Fonction qui supprime les accents de la chaîne de caractères fournie en paramètre et la retourne sans accent
 def supprimer_accents(texte):
@@ -42,7 +45,8 @@ def recuperer_texte(texte):
 """Cette fonction chiffre en César avec un message et une clé
 Elle vérifie si le texte donné est un texte ou le nom d'un fichier et récupère alors le texte du fichier
 Elle fait appel à une fonction pour enlever les accents du texte
-Elle chiffre selon la clé donnée en paramètrre"""
+Elle chiffre selon la clé donnée en paramètre"""
+
 def chiffrer(message: str, cle: int):
 	# Exigences visibles dans tests/test_caesar.py :
 	# - test_cesar_officiel_cle_42
@@ -82,6 +86,8 @@ def dechiffrer(message: str, cle: int):
 
 def enigma_chiffrer(message: str, cles):
 	chiffrage=""
+	if message.endswith(".txt"):
+		message=recuperer_texte(message)
 	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		chiffrage+=chiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
@@ -93,6 +99,8 @@ def enigma_chiffrer(message: str, cles):
 	pass
 def enigma_dechiffrer(message: str, cles):
 	dechiffrage=""
+	if message.endswith(".txt"):
+		message=recuperer_texte(message)
 	for position in range(len(message)):
 		indice_cle=position%3 #permet d'identifier quelle clé du tuple cles il faut utiliser
 		dechiffrage+=dechiffrer(message[position],cles[indice_cle]) #Chiffre la lettre du message avec la bonne clé
@@ -128,10 +136,7 @@ def dechiffrer_force_brute(message, methode="caesar"):
 def reconnaitre(message):
 	#Créer une fonction qui permet de valider à un certain degré de confiance que le message est déchiffré
 	#Renvoie un boléen
-	with open(chemin, "r", encoding="utf-8") as f:
-		dictionnaire = set(mot.lower() for mot in f.read().splitlines()) #set() permet un hachage des mots (recherche plus rapide)
-	mots = message.lower().split()
-	mots = message.lower().replace("'", " ").replace("'", " ").split() #remplace ' par un espace
+	mots = message.lower().replace("'", " ").split() #remplace ' par un espace
 	mots_nettoyes = [mot.strip(string.punctuation) for mot in mots] #il ne reste plus que les mots séparés par des " "
 	mots_nettoyes = [mot for mot in mots_nettoyes if mot]  # retire les mots vides crées par la ponctuation vide
 	if len(mots_nettoyes) == 0:
@@ -141,7 +146,7 @@ def reconnaitre(message):
 		if mot in dictionnaire:
 			mots_valide+=1
 	score=mots_valide/len(mots_nettoyes)
-	return score>=0.6
+	return score>=0.8
 
 def _parse_cle(texte: str):
 	"""Convertit l'argument --cle en clé utilisable.
@@ -276,6 +281,9 @@ def main(argv=None):
 		print("1. Cesar (caesar)")
 		print("2. Enigma Cesar (enigma)")
 		choix_m = input("Votre choix (1 ou 2) : ").strip()
+		while choix_m not in ["1","2"] :
+			print("Erreur de saisie, veuillez choisir parmi 1 ou 2")
+			choix_m = input("Votre choix (1 ou 2) : ").strip()
 		methode = "caesar" if choix_m == "1" else "enigma"
 
 		# 2. Choix de l'action
@@ -284,6 +292,9 @@ def main(argv=None):
 		print("2. Dechiffrer")
 		print("3. Force Brute (bruteforce)")
 		choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
+		while choix_a not in ["1","2","3"] :
+			print("Erreur de saisie, veuillez choisir parmi 1, 2 ou 3")
+			choix_a = input("Votre choix (1, 2 ou 3) : ").strip()
 		if choix_a == "1":
 			action = "chiffrer"
 		elif choix_a == "2":
@@ -292,7 +303,7 @@ def main(argv=None):
 			action = "bruteforce"
 
 		# 3. Saisie du message
-		message = input("\nEntrez votre message ou le nom du fichier (.txt) : ").strip()
+		message = input("\nEntrez votre message ou le nom complet du fichier (exemple.txt) : ").strip()
 
 		# 4. Saisie de la clé (sauf si brute force)
 		if action != "bruteforce":
