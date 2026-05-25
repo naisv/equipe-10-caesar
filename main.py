@@ -135,9 +135,6 @@ def reconnaitre(message):
 		compteur+=1
 		if mot in dictionnaire:
 			mots_valide+=1
-		restant=len(mots_nettoyes)-compteur
-		if (mots_valide+restant)/len(mots_nettoyes)<0.8:
-			return False
 	score=mots_valide/len(mots_nettoyes)
 	return score>=0.8
 
